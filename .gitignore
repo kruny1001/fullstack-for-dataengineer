@@ -1,0 +1,6 @@
+elastic/node_modules
+elastic/es_data
+mongodb/data
+server/node_modules
+web/node_modules
+web/.nuxt

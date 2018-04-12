@@ -1,0 +1,47 @@
+version: '2.2'
+services:
+  # NUXT
+  # webapp:
+  # NodeJS
+  server:
+    build: ./server
+    ports:
+      - 8080:8080
+    links:
+      - mongodb
+  # MongoDB database
+  # mongodb:
+  mongodb:
+    container_name: mongo
+    #image: mongo
+    build: ./mongodb
+    volumes:
+      - ./mongodb/data:/data/db
+    ports:
+      - "27017:27017"  
+  # ElasticSearch 
+  elasticsearch:
+    # image: elasticsearch
+    build: ./elastic
+    volumes:
+      - ./elastic/es_data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - es
+  
+  kibana:
+    image: kibana
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    networks:
+      - es
+    depends_on:
+      - elasticsearch
+
+networks:
+  es:
+    driver: bridge
