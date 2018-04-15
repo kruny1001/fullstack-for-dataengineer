@@ -25,16 +25,16 @@ PUT /nfl
                 "store" : "yes"
             },
             "qtr" : {
-                "type" : "short",
+                "type" : "number",
                 "store" : "yes"
             },
             "min" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes",
                 "ignore_malformed" : "true"
             },
             "sec" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes",
                 "ignore_malformed" : "true"
             },
@@ -47,26 +47,26 @@ PUT /nfl
                 "index" : "not_analyzed"
             },
             "down" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes",
                 "ignore_malformed" : "true"
             },
             "togo" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes",
                 "ignore_malformed" : "true"
             },
             "ydline" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes",
                 "ignore_malformed" : "true"
             },
             "scorediff" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "series1stdn" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "description" : {
@@ -74,23 +74,23 @@ PUT /nfl
                 "store" : "yes"
             },
             "scorechange" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "nextscore" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "teamwin" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "offscore" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "defscore" : {
-                "type" : "short",
+                "type" : "integer",
                 "store" : "yes"
             },
             "season" : {

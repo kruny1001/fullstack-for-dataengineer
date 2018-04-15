@@ -8,8 +8,21 @@
       Vue.js
       D3js v4
     </pre>
+    <div v-for="datat in touchdowns">
+      {{datat.key}} : {{datat.doc_count}}
+      <hr />
+    </div>
     
+    <label> Text Term </label>
+    <input type="text" v-model="text" @change="realtime">
     <div id="donut-chart"></div>
+
+    <div v-for="record in textResult">
+      ydline: {{record._source.ydline}}<br/>
+      description: {{record._source.description}}
+      <hr />
+    </div>
+    
 
     <button @click="donut()"> Create Donut </button>
   </section>
@@ -36,7 +49,7 @@ export default {
           // Boolean query for matching and excluding items.
           bool: {
             must: { match: { 
-              "description": "TOUCHDOWN" 
+              "description": vm.text
               } 
             },
             must_not: { match: { "qtr": 5 } }
@@ -112,9 +125,8 @@ export default {
           .attr('d', arc)
           .attr('fill', function(d, i) { 
             return color(d.data.key);
-          
           });
-        
+
         path.on('mouseover', function(d) {
           var total = d3.sum(vm.touchdowns.map(function(d) {
             return d.value;
@@ -153,86 +165,129 @@ export default {
           .attr('x', legendRectSize + legendSpacing)
           .attr('y', legendRectSize - legendSpacing)
           .text(function(d) { return d; });
-
+    },
+    updatePie(){
+      console.log("update")
+      var vm = this;
+      var pie = d3.pie()
+          .value(function(d) { return d.doc_count; })
+          .sort(null);
+      var path = d3.select('#donut-chart')
+          .selectAll('path').data(pie(vm.touchdowns))
+    },
+    realtime(){
+      var vm = this;
+      vm.CLIENT.search({
+      index: 'nfl',
+      type: '2013',
+      size: 10,
+      body: {
+        // Begin query.
+        query: {
+          // Boolean query for matching and excluding items.
+          bool: {
+            must: { match: { 
+              "description": vm.text
+              } 
+            },
+            must_not: { match: { "qtr": 5 } }
+          }
+        }}}).then(function(resp) {
+      console.log(resp);
+      // D3 code goes here.
+      vm.textResult = resp.hits.hits;
       
-      // d3 donut chart
-        // var width = 600,
-        //     height = 300,
-        //     radius = Math.min(width, height) / 2;
-        // var color = ['#ff7f0e', '#d62728', '#2ca02c', '#1f77b4'];
-        // var arc = d3.svg.arc()
-        //     .outerRadius(radius - 60)
-        //     .innerRadius(120);
-        // var pie = d3.layout.pie()
-        //     .sort(null)
-        //     .value(function (d) { return d.doc_count; });
-        // var svg = d3.select("#donut-chart").append("svg")
-        //     .attr("width", width)
-        //     .attr("height", height)
-        //     .append("g")
-        //     .attr("transform", "translate(" + width/1.4 + "," + height/2 + ")");
-        // var g = svg.selectAll(".arc")
-        //     .data(pie(touchdowns))
-        //     .enter()
-        //     .append("g")
-        //     .attr("class", "arc");
-        // g.append("path")
-        //     .attr("d", arc)
-        //     .style("fill", function (d, i) { return color[i]; });
-        // g.append("text")
-        //     .attr("transform", function (d) { return "translate(" + arc.centroid(d) + ")"; })
-        //     .attr("dy", ".35em")
-        //     .style("text-anchor", "middle")
-        //     .style("fill", "white")
-        //     .text(function (d) { return d.data.key; });
+    }).catch(function(err) {
+      console.log(err);
+      // D3 code goes here.
+    });
+
+      vm.CLIENT.search({
+      index: 'nfl',
+      type: '2013',
+      size: 10,
+      body: {
+        // Begin query.
+        query: {
+          // Boolean query for matching and excluding items.
+          bool: {
+            must: { match: { 
+              "description": vm.text
+              } 
+            },
+            must_not: { match: { "qtr": 5 } }
+          }
+        },
+        // Aggregate on the results
+        aggs: {
+          touchdowns: {
+            terms: {
+              field: "qtr",
+              // order by quarter, ascending
+              order: { "_term": "asc" }
+            }
+          }
+        }
+      }
+    }).then(function(resp) {
+      // console.log(resp);
+      // D3 code goes here.
+      vm.touchdowns = resp.aggregations.touchdowns.buckets;
+      vm.updatePie()
+    }).catch(function(err) {
+      console.log(err);
+      // D3 code goes here.
+    });
     }
   },
   data() {
     return {
       CLIENT: null,
-      touchdowns:[]
+      touchdowns:[],
+      textResult: [],
+      text: "TOUCHDOWN"
     }
   },
 
 }
 </script>
 <style>
-.legend {
-    font-size: 13px;
-  }
-  h1 {
-  font-size: 15px;
-  text-align: center;
-	}
-  rect {
-    stroke-width: 2;
-  }
-  #chart {
-  height: 360px;
-  margin: 0 auto;                            
-  position: relative;
-  width: 360px;
-	}
-  .tooltip {
-  box-shadow: 0 0 5px #999999;
-  display: none;
-  font-size: 12px;
-  left: 130px;
-  padding: 10px;
-  position: absolute;
-  text-align: center;
-  top: 95px;
-  width: 80px;
-  z-index: 10;
-  line-height: 140%; /*Interlineado*/
-  font-family: "Open Sans", sans-serif;
-  font-weight: 300;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border-radius: 2px;
-	}
-  
-  .label {
-   font-weight: 600;
-  }
+  .legend {
+      font-size: 13px;
+    }
+    h1 {
+    font-size: 15px;
+    text-align: center;
+    }
+    rect {
+      stroke-width: 2;
+    }
+    #chart {
+    height: 360px;
+    margin: 0 auto;                            
+    position: relative;
+    width: 360px;
+    }
+    .tooltip {
+    box-shadow: 0 0 5px #999999;
+    display: none;
+    font-size: 12px;
+    left: 130px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 95px;
+    width: 80px;
+    z-index: 10;
+    line-height: 140%; /*Interlineado*/
+    font-family: "Open Sans", sans-serif;
+    font-weight: 300;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    }
+    
+    .label {
+    font-weight: 600;
+    }
   </style>
